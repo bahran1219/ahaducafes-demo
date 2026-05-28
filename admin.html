@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Ahadu Café</title>
+  <meta name="robots" content="noindex, nofollow"/>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+</head>
+<body class="admin-body">
+
+<!-- LOGIN -->
+<div class="a-login" id="aLogin">
+  <div class="a-login-bg"></div>
+  <div class="a-login-card">
+    <div class="alc-logo">Ahadu</div>
+    <div class="alc-sub">Staff Portal — Private Access</div>
+    <div class="alc-title">Welcome back 👋</div>
+    <div class="fg mt">
+      <label>Username</label>
+      <input type="text" id="lUser" placeholder="Enter username" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <div class="fg">
+      <label>Password</label>
+      <div style="position:relative">
+        <input type="password" id="lPass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/>
+        <button class="pw-eye" onclick="togglePw()" type="button">👁</button>
+      </div>
+    </div>
+    <div class="lerr" id="lErr"></div>
+    <button class="btn btn-primary" style="width:100%;padding:13px;font-size:15px;margin-top:1.25rem" onclick="doLogin()">Login →</button>
+    <a href="index.html" class="back-link">← Back to menu</a>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="a-dash" id="aDash" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="a-sidebar" id="aSidebar">
+    <div class="a-sb-logo">Ahadu</div>
+    <div class="a-sb-user" id="sbUser"></div>
+    <nav class="a-sb-nav">
+      <button class="sbn active" onclick="goTab('dashboard',this)"><span>📊</span>Dashboard</button>
+      <button class="sbn" onclick="goTab('orders',this)"><span>📋</span>Live Orders</button>
+      <button class="sbn" onclick="goTab('reservations',this)"><span>📅</span>Reservations</button>
+      <button class="sbn" onclick="goTab('menu',this)"><span>🍽️</span>Menu Status</button>
+      <button class="sbn" id="sbnAdmins" onclick="goTab('admins',this)"><span>👥</span>Manage Admins</button>
+      <button class="sbn" onclick="goTab('qr',this)"><span>📱</span>QR Codes</button>
+    </nav>
+    <button class="a-sb-logout" onclick="doLogout()">← Logout</button>
+  </aside>
+
+  <main class="a-main">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="tpanel" id="tDashboard">
+      <div class="a-ph">
+        <div><h1 class="a-h1">Dashboard</h1><p class="a-sub" id="dashGreeting"></p></div>
+        <button class="btn-sm btn-green" onclick="refreshAll()">↻ Refresh</button>
+      </div>
+
+      <!-- STAT CARDS -->
+      <div class="dash-stats" id="dashStats"></div>
+
+      <!-- CHARTS ROW -->
+      <div class="dash-charts">
+        <div class="dash-chart-card">
+          <div class="dcc-title">📦 Orders by type (today)</div>
+          <div class="donut-wrap" id="donutWrap">
+            <canvas id="donutChart" width="160" height="160"></canvas>
+            <div class="donut-legend" id="donutLegend"></div>
+          </div>
+        </div>
+        <div class="dash-chart-card">
+          <div class="dcc-title">⏱ Orders over time (today)</div>
+          <canvas id="lineChart" width="320" height="160" style="max-width:100%"></canvas>
+        </div>
+      </div>
+
+      <!-- LIVE FEED -->
+      <div class="dash-live">
+        <div class="dcc-title">🔴 Live order feed <span class="live-dot"></span></div>
+        <div id="dashFeed"></div>
+      </div>
+    </div>
+
+    <!-- ══ LIVE ORDERS ══ -->
+    <div class="tpanel" id="tOrders" style="display:none">
+      <div class="a-ph">
+        <div><h1 class="a-h1">Live Orders</h1><p class="a-sub">Real-time orders from all channels</p></div>
+        <div class="a-ph-btns">
+          <button class="btn-sm btn-green" onclick="refreshOrders()">↻ Refresh</button>
+          <button class="btn-sm btn-red" onclick="clearOrders()">Clear all</button>
+        </div>
+      </div>
+      <div class="orders-summary" id="ordersSummary"></div>
+      <div class="a-fbar" style="margin-top:1rem">
+        <button class="af active" onclick="filterOrders('all',this)">All</button>
+        <button class="af" onclick="filterOrders('dine',this)">🪑 Dine In</button>
+        <button class="af" onclick="filterOrders('takeaway',this)">🥡 Takeaway</button>
+        <button class="af" onclick="filterOrders('delivery',this)">🛵 Delivery</button>
+      </div>
+      <div class="orders-wrap" id="ordersWrap"></div>
+    </div>
+
+    <!-- ══ RESERVATIONS ══ -->
+    <div class="tpanel" id="tReservations" style="display:none">
+      <div class="a-ph">
+        <div><h1 class="a-h1">Reservations</h1><p class="a-sub">Manage table bookings</p></div>
+        <div class="a-ph-btns">
+          <button class="btn-sm btn-green" onclick="renderReservations()">↻ Refresh</button>
+          <button class="btn-sm btn-red" onclick="clearReservations()">Clear all</button>
+        </div>
+      </div>
+      <!-- Date filter -->
+      <div class="res-filter-row">
+        <div class="fg" style="max-width:200px;margin:0">
+          <label>Filter by date</label>
+          <input type="date" id="resFilterDate" onchange="renderReservations()"/>
+        </div>
+        <div class="res-stats" id="resStats"></div>
+      </div>
+      <div class="res-list" id="resList"></div>
+    </div>
+
+    <!-- ══ MENU STATUS ══ -->
+    <div class="tpanel" id="tMenu" style="display:none">
+      <div class="a-ph">
+        <div><h1 class="a-h1">Menu Status</h1><p class="a-sub">Toggle items available or sold out</p></div>
+        <div class="a-ph-btns">
+          <button class="btn-sm btn-green" onclick="allAvail()">✓ All Available</button>
+          <button class="btn-sm btn-red" onclick="allSoldOut()">✕ All Sold Out</button>
+        </div>
+      </div>
+      <div class="a-fbar">
+        <button class="af active" onclick="aFilter('all',this)">All</button>
+        <button class="af" onclick="aFilter('burger',this)">🍔 Burgers</button>
+        <button class="af" onclick="aFilter('pizza',this)">🍕 Pizza</button>
+        <button class="af" onclick="aFilter('noodles',this)">🍜 Noodles</button>
+        <button class="af" onclick="aFilter('sides',this)">🍟 Sides</button>
+      </div>
+      <div class="a-mgrid" id="aMGrid"></div>
+    </div>
+
+    <!-- ══ ADMINS ══ -->
+    <div class="tpanel" id="tAdmins" style="display:none">
+      <div class="a-ph">
+        <div><h1 class="a-h1">Manage Admins</h1><p class="a-sub">Add or remove staff with panel access</p></div>
+        <button class="btn btn-primary" onclick="openAddAdmin()">+ Add Admin</button>
+      </div>
+      <div class="admins-wrap" id="adminsWrap"></div>
+    </div>
+
+    <!-- ══ QR CODES ══ -->
+    <div class="tpanel" id="tQr" style="display:none">
+      <div class="a-ph">
+        <div><h1 class="a-h1">QR Codes</h1><p class="a-sub">Generate per-table QR codes for scanning</p></div>
+      </div>
+      <div class="qr-url-row">
+        <div class="fg" style="flex:1;max-width:440px">
+          <label>Your website URL</label>
+          <input type="text" id="qrBaseUrl" value="https://ahaducafe.netlify.app" oninput="renderQrGrid()"/>
+        </div>
+        <p class="qr-hint">Paste your real Netlify URL. All QR codes update instantly.</p>
+      </div>
+      <div class="table-count-row">
+        <label>Number of tables:</label>
+        <div class="table-count-btns">
+          <button class="tc-btn active" onclick="setTableCount(5,this)">5</button>
+          <button class="tc-btn" onclick="setTableCount(10,this)">10</button>
+          <button class="tc-btn" onclick="setTableCount(15,this)">15</button>
+          <button class="tc-btn" onclick="setTableCount(20,this)">20</button>
+          <button class="tc-btn" onclick="setTableCount(30,this)">30</button>
+        </div>
+        <button class="btn-sm btn-outline" style="margin-left:auto" onclick="dlAllQr()">⬇ Download All</button>
+      </div>
+      <div class="general-qr-row">
+        <div class="gen-qr-card">
+          <div class="gen-qr-label">🌐 General QR — Takeaway / Delivery / Walk-in</div>
+          <div class="gen-qr-sub">Put at entrance or counter. Customers choose their order type.</div>
+          <div id="generalQrImg" style="margin:12px 0"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="dlQr('general',0)">⬇ Download</button>
+            <button class="btn-sm btn-outline" onclick="printQr('general',0)">🖨 Print</button>
+          </div>
+        </div>
+      </div>
+      <div class="qr-table-grid" id="qrTableGrid"></div>
+      <div class="launch-guide" style="margin-top:2rem">
+        <div class="lg-title">🚀 How to launch — step by step</div>
+        <div class="lg-steps">
+          <div class="lg-step"><div class="lg-num">1</div><div><strong>Put all 6 files in one folder</strong><p>index.html, admin.html, style.css, app.js, admin.js, menu-data.js</p></div></div>
+          <div class="lg-step"><div class="lg-num">2</div><div><strong>Go to netlify.com</strong><p>Sign up free at <a href="https://netlify.com" target="_blank">netlify.com</a>.</p></div></div>
+          <div class="lg-step"><div class="lg-num">3</div><div><strong>Drag & drop your folder</strong><p>Click "Add new site" → "Deploy manually" → drag your folder.</p></div></div>
+          <div class="lg-step"><div class="lg-num">4</div><div><strong>Get your URL & paste above</strong><p>Rename to <em>ahaducafe.netlify.app</em> in settings.</p></div></div>
+          <div class="lg-step"><div class="lg-num">5</div><div><strong>Print your table QR codes</strong><p>Download each table QR and laminate them on tables.</p></div></div>
+          <div class="lg-step lg-step-done"><div class="lg-num">✓</div><div><strong>You're live!</strong><p>Admin at <em>yoursite.netlify.app/admin.html</em> — bookmark it.</p></div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ADD ADMIN MODAL -->
+<div class="overlay" id="addAdminOv" onclick="closeAddAdmin(event)">
+  <div class="modal" style="max-width:420px;padding:2rem">
+    <button class="modal-x" onclick="closeAddAdminBtn()">✕</button>
+    <h3 class="mtitle">Add New Admin</h3>
+    <p style="font-size:13px;color:#888;margin-bottom:1.5rem">They log in at <em>yoursite.netlify.app/admin.html</em></p>
+    <div class="fg"><label>Full name</label><input type="text" id="nName" placeholder="Sara Tesfaye"/></div>
+    <div class="fg"><label>Username</label><input type="text" id="nUser" placeholder="sara"/></div>
+    <div class="fg"><label>Password</label><input type="password" id="nPass" placeholder="Min. 6 characters"/></div>
+    <div class="fg">
+      <label>Role</label>
+      <select id="nRole">
+        <option value="admin">Admin — manage menu + admins</option>
+        <option value="staff">Staff — manage menu only</option>
+      </select>
+    </div>
+    <div class="lerr" id="addErr"></div>
+    <button class="btn btn-primary" style="width:100%;padding:13px;margin-top:1rem" onclick="saveAdmin()">Add Admin</button>
+  </div>
+</div>
+
+<div class="a-toast" id="aToast"></div>
+<script src="menu-data.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

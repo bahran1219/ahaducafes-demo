@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ahadu Café — Order Online</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader" id="loader">
+  <div class="loader-inner">
+    <div class="loader-logo">Ahadu</div>
+    <div class="loader-tagline">Café</div>
+    <div class="loader-bar"><div class="loader-fill"></div></div>
+    <div class="loader-dots"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<!-- TABLE BANNER -->
+<div class="table-banner" id="tableBanner" style="display:none">
+  <span class="table-banner-icon">🪑</span>
+  <span class="table-banner-txt" id="tableBannerTxt">Table 1</span>
+  <span class="table-banner-change" onclick="changeOrderType()">Change ↗</span>
+</div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <a class="logo" href="#">Ahadu <em>Café</em></a>
+  <ul class="nav-links">
+    <li><a href="#menu" class="nav-a">Menu</a></li>
+    <li><a href="#reserve" class="nav-a">Reserve</a></li>
+    <li><a href="#about" class="nav-a">About</a></li>
+    <li><a href="#contact" class="nav-a">Contact</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="open-pill"><span class="pulse-dot"></span>Open Now</div>
+    <button class="nav-track-btn" onclick="openTracking()">📦 Track</button>
+    <button class="cart-btn" onclick="toggleCart()">🛒 <span class="cart-badge" id="cartBadge">0</span></button>
+  </div>
+</nav>
+
+<!-- ORDER TYPE BAR -->
+<div class="order-type-bar" id="orderTypeBar" style="display:none">
+  <div class="otb-options">
+    <button class="ot-btn active" id="otDine" onclick="setOrderType('dine',this)"><span>🍽️</span><b>Dine In</b></button>
+    <button class="ot-btn" id="otTake" onclick="setOrderType('takeaway',this)"><span>🥡</span><b>Takeaway</b></button>
+    <button class="ot-btn" id="otDeliv" onclick="setOrderType('delivery',this)"><span>🛵</span><b>Delivery</b></button>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="heroSection">
+  <div class="hero-left">
+    <div class="hero-eyebrow"><span class="eyebrow-line"></span>Fresh · Ethiopian · World-class</div>
+    <h1 class="hero-h1">Food that<br><em class="hero-em">moves</em> you.</h1>
+    <p class="hero-p">Customize every ingredient, pay your way. Real flavours, ready in 15 minutes.</p>
+    <div class="hero-btns">
+      <button class="btn btn-hero" onclick="scrollSmooth('menu')">Browse Menu ↓</button>
+      <div class="hero-stats">
+        <div class="h-stat"><b>4.9★</b><span>Rating</span></div>
+        <div class="h-divider"></div>
+        <div class="h-stat"><b>10k+</b><span>Orders</span></div>
+        <div class="h-divider"></div>
+        <div class="h-stat"><b>15min</b><span>Wait</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-orbit-wrap">
+      <div class="orbit o1"></div><div class="orbit o2"></div>
+      <div class="hero-circle">
+        <img src="https://images.pexels.com/photos/1639565/pexels-photo-1639565.jpeg?auto=compress&cs=tinysrgb&w=700"
+          alt="Signature Burger" id="heroImg" class="hero-img-photo"/>
+      </div>
+    </div>
+    <div class="hero-float hf1">
+      <div class="hf-stars">★★★★★</div>
+      <div class="hf-name" id="heroFloatName">Signature Burger</div>
+      <div class="hf-price" id="heroFloatPrice">500 Birr</div>
+    </div>
+    <div class="hero-float hf2">🚀 Order in 30 seconds</div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-outer">
+  <div class="marquee-track">
+    <span>🍔 Burgers</span><b>·</b><span>🍕 Pizza</span><b>·</b><span>🍜 Noodles</span><b>·</b><span>🍟 Sides</span><b>·</b><span>🥤 Drinks</span><b>·</b><span>🪑 Dine In</span><b>·</b><span>🥡 Takeaway</span><b>·</b><span>🛵 Delivery</span><b>·</b><span>💳 Card · Bank · Cash</span><b>·</b><span>🔥 Fresh daily</span><b>·</b>
+    <span>🍔 Burgers</span><b>·</b><span>🍕 Pizza</span><b>·</b><span>🍜 Noodles</span><b>·</b><span>🍟 Sides</span><b>·</b><span>🥤 Drinks</span><b>·</b><span>🪑 Dine In</span><b>·</b><span>🥡 Takeaway</span><b>·</b><span>🛵 Delivery</span><b>·</b><span>💳 Card · Bank · Cash</span><b>·</b><span>🔥 Fresh daily</span><b>·</b>
+  </div>
+</div>
+
+<!-- MENU -->
+<section class="section" id="menu">
+  <div class="sec-head">
+    <div class="sec-eyebrow">What we serve</div>
+    <h2 class="sec-title">Our <em>Menu</em></h2>
+  </div>
+  <div class="cat-bar" id="catBar">
+    <button class="cat active" onclick="filterCat('all',this)">All</button>
+    <button class="cat" onclick="filterCat('burger',this)">🍔 Burgers</button>
+    <button class="cat" onclick="filterCat('pizza',this)">🍕 Pizza</button>
+    <button class="cat" onclick="filterCat('noodles',this)">🍜 Noodles</button>
+    <button class="cat" onclick="filterCat('sides',this)">🍟 Sides & Drinks</button>
+  </div>
+  <div class="menu-grid" id="menuGrid"></div>
+</section>
+
+<!-- RESERVATION SECTION -->
+<section class="section reserve-section" id="reserve">
+  <div class="sec-head">
+    <div class="sec-eyebrow">Book a table</div>
+    <h2 class="sec-title">Reserve <em>your seat</em></h2>
+  </div>
+  <div class="reserve-card">
+    <div class="reserve-form">
+      <!-- Step 1: Date & Time -->
+      <div class="rs-step" id="rsStep1">
+        <div class="rs-step-title">📅 Date & Time</div>
+        <div class="rs-row">
+          <div class="rs-field">
+            <label>Date</label>
+            <input type="date" id="resDate" min="" onchange="loadTimeSlots()"/>
+          </div>
+          <div class="rs-field">
+            <label>Guests</label>
+            <select id="resGuests">
+              <option value="1">1 person</option>
+              <option value="2" selected>2 people</option>
+              <option value="3">3 people</option>
+              <option value="4">4 people</option>
+              <option value="5">5 people</option>
+              <option value="6">6 people</option>
+              <option value="7">7 people</option>
+              <option value="8">8+ people</option>
+            </select>
+          </div>
+        </div>
+        <!-- Time slots -->
+        <div class="rs-field" style="margin-top:.75rem">
+          <label>Available time slots</label>
+          <div class="time-slots" id="timeSlots">
+            <div class="ts-hint">Pick a date first</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Contact -->
+      <div class="rs-step" id="rsStep2" style="margin-top:1.25rem">
+        <div class="rs-step-title">👤 Your details</div>
+        <div class="rs-row">
+          <div class="rs-field">
+            <label>Full name</label>
+            <input type="text" id="resName" placeholder="Your name"/>
+          </div>
+          <div class="rs-field">
+            <label>Phone number</label>
+            <input type="tel" id="resPhone" placeholder="+251 9xx xxx xxx"/>
+          </div>
+        </div>
+        <div class="rs-field" style="margin-top:.75rem">
+          <label>Email (for confirmation)</label>
+          <input type="email" id="resEmail" placeholder="your@email.com"/>
+        </div>
+        <div class="rs-field" style="margin-top:.75rem">
+          <label>Special requests (optional)</label>
+          <input type="text" id="resNote" placeholder="Birthday celebration, dietary needs…"/>
+        </div>
+      </div>
+
+      <button class="btn btn-primary reserve-btn" onclick="submitReservation()">
+        Confirm Reservation →
+      </button>
+    </div>
+    <div class="reserve-info">
+      <div class="ri-card">
+        <div class="ri-icon">🕐</div>
+        <div class="ri-title">Opening hours</div>
+        <div class="ri-row"><span>Mon – Fri</span><span>8am – 10pm</span></div>
+        <div class="ri-row"><span>Sat – Sun</span><span>9am – 11pm</span></div>
+      </div>
+      <div class="ri-card">
+        <div class="ri-icon">📱</div>
+        <div class="ri-title">Confirmation</div>
+        <div class="ri-text">You'll receive an email & SMS confirmation with your booking details and a calendar invite.</div>
+      </div>
+      <div class="ri-card">
+        <div class="ri-icon">📍</div>
+        <div class="ri-title">Location</div>
+        <div class="ri-text">Addis Ababa, Ethiopia<br/>📞 +251 911 000 000</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROMO -->
+<div class="promo-band">
+  <div class="promo-glow"></div>
+  <div class="promo-left"><span class="promo-icon">🎉</span><div><div class="promo-title">First order? Free delivery!</div><div class="promo-sub">Use code <strong>AHADU1ST</strong> at checkout.</div></div></div>
+  <button class="btn btn-wh" onclick="scrollSmooth('menu')">Order now →</button>
+</div>
+
+<!-- ABOUT -->
+<section class="about-sec" id="about">
+  <div class="about-img-side">
+    <img src="https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Inside Ahadu Café" class="about-photo"/>
+    <div class="about-badge"><div class="ab-num">10k+</div><div class="ab-lbl">Happy customers</div></div>
+  </div>
+  <div class="about-text-side">
+    <div class="sec-eyebrow">Our story</div>
+    <h2 class="about-h2">Born in Ethiopia,<br>made with <em>love</em></h2>
+    <p class="about-p">Ahadu Café started as a dream to bring world-class comfort food to our community. Every recipe is crafted with care using only the freshest local ingredients.</p>
+    <div class="about-stats">
+      <div class="as-card"><div class="as-n">5+</div><div class="as-l">Years open</div></div>
+      <div class="as-card"><div class="as-n">★4.9</div><div class="as-l">Rating</div></div>
+      <div class="as-card"><div class="as-n">15min</div><div class="as-l">Avg wait</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer" id="contact">
+  <div class="footer-grid">
+    <div><div class="f-logo">Ahadu Café</div><div class="f-tag">Serving happiness, one meal at a time.</div></div>
+    <div><div class="f-head">Hours</div><div class="f-item">Mon – Fri: 8am – 10pm</div><div class="f-item">Sat – Sun: 9am – 11pm</div><div class="f-item open"><span class="pulse-dot green"></span>Open right now</div></div>
+    <div><div class="f-head">Contact</div><div class="f-item">📍 Addis Ababa, Ethiopia</div><div class="f-item">📞 +251 911 000 000</div><div class="f-item">✉️ hello@ahaducafe.et</div></div>
+  </div>
+  <div class="footer-bot"><span>© 2026 Ahadu Café. All rights reserved.</span></div>
+</footer>
+
+<!-- ORDER TYPE CHANGE MODAL -->
+<div class="overlay" id="otOverlay" onclick="closeOtModal(event)">
+  <div class="modal ot-modal">
+    <button class="modal-x" onclick="closeOtModalBtn()">✕</button>
+    <h3 class="mtitle" style="margin-bottom:1.25rem">How would you like your order?</h3>
+    <div class="ot-modal-options">
+      <button class="ot-modal-btn" onclick="setOrderTypeModal('dine')"><span>🍽️</span><div><b>Dine In</b><p>Table <span id="otModalTableNum">1</span></p></div><span class="ot-check" id="otc-dine"></span></button>
+      <button class="ot-modal-btn" onclick="setOrderTypeModal('takeaway')"><span>🥡</span><div><b>Takeaway</b><p>Pick up at counter</p></div><span class="ot-check" id="otc-takeaway"></span></button>
+      <button class="ot-modal-btn" onclick="setOrderTypeModal('delivery')"><span>🛵</span><div><b>Delivery</b><p>We bring to you</p></div><span class="ot-check" id="otc-delivery"></span></button>
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:13px;margin-top:1.25rem" onclick="closeOtModalBtn()">Confirm</button>
+  </div>
+</div>
+
+<!-- CUSTOMIZE MODAL -->
+<div class="overlay" id="customOv" onclick="closeCustom(event)">
+  <div class="modal" id="customModal">
+    <button class="modal-x" onclick="closeCustomBtn()">✕</button>
+    <div class="modal-img-wrap" id="modalImgWrap"></div>
+    <div class="modal-body">
+      <div class="mbadge" id="mBadge"></div>
+      <h3 class="mtitle" id="mTitle"></h3>
+      <p class="mdesc" id="mDesc"></p>
+      <div class="mprice-row">
+        <span class="mprice" id="mPrice"></span>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="chgQty(-1)">−</button>
+          <span id="qtyNum">1</span>
+          <button class="qty-btn" onclick="chgQty(1)">+</button>
+        </div>
+      </div>
+      <div class="m-divider"></div>
+      <div class="m-sec"><div class="m-sec-title">🥗 Ingredients <span class="m-hint">— tap to remove</span></div><div class="ing-wrap" id="ingWrap"></div></div>
+      <div class="m-sec"><div class="m-sec-title">✨ Extras</div><div class="ext-wrap" id="extWrap"></div></div>
+      <div class="m-sec"><div class="m-sec-title">📝 Special note</div><textarea class="note-ta" id="noteTA" placeholder="Extra spicy, no salt…"></textarea></div>
+      <button class="btn btn-add" id="addBtn" onclick="addToCart()">Add to order — <span id="addPrice"></span></button>
+    </div>
+  </div>
+</div>
+
+<!-- CART -->
+<div class="cart-bg" id="cartBg" onclick="toggleCart()"></div>
+<aside class="cart-panel" id="cartPanel">
+  <div class="cart-hd">
+    <div><h3 class="cart-htitle">🛒 Your Order</h3><div class="cart-order-type-badge" id="cartOrderTypeBadge"></div></div>
+    <button class="modal-x" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-body" id="cartBody">
+    <div class="cart-empty" id="cartEmpty"><div style="font-size:52px">🍽️</div><div style="font-weight:500;margin-top:8px">Cart is empty</div><div style="font-size:13px;color:#aaa;margin-top:4px">Add something delicious!</div></div>
+  </div>
+  <div class="cart-foot" id="cartFoot" style="display:none">
+    <div class="cfoot-row"><span>Subtotal</span><span id="cSub"></span></div>
+    <div class="cfoot-row" id="delivFeeRow" style="display:none"><span>Delivery fee</span><span>50 Birr</span></div>
+    <div class="cfoot-row cfoot-total"><span>Total</span><span id="cTotal"></span></div>
+    <button class="btn btn-primary" style="width:100%;padding:14px;font-size:15px;margin-top:1rem" onclick="openCheckout()">Proceed to Payment →</button>
+  </div>
+</aside>
+
+<!-- CHECKOUT MODAL -->
+<div class="overlay" id="checkOv" onclick="closeCheckout(event)">
+  <div class="modal checkout-modal">
+    <button class="modal-x" onclick="closeCheckoutBtn()">✕</button>
+    <h3 class="mtitle">Complete your order</h3>
+    <div class="checkout-order-info" id="checkoutOrderInfo"></div>
+    <p style="font-size:13px;color:#888;margin-bottom:1.25rem">Choose how you'd like to pay</p>
+
+    <!-- 2 payment methods only (no card) -->
+    <div class="pay-tabs">
+      <button class="ptab active" onclick="selPay('bank',this)">🏦 Bank Transfer</button>
+      <button class="ptab" onclick="selPay('cash',this)">💵 Cash</button>
+    </div>
+
+    <!-- BANK TRANSFER with screenshot upload -->
+    <div id="pBank">
+      <div class="bank-box">
+        <div class="bank-title">Transfer to this account</div>
+        <div class="brow"><span>Bank</span><strong>Commercial Bank of Ethiopia</strong></div>
+        <div class="brow"><span>Account</span><strong>Ahadu Café PLC</strong></div>
+        <div class="brow"><span>Number</span><strong>1000 2345 6789</strong></div>
+        <div class="brow"><span>Amount</span><strong id="bankAmount" style="color:#B85C2A">—</strong></div>
+        <div class="brow"><span>Reference</span><strong id="bankRef">AHD-0001</strong></div>
+      </div>
+      <div class="bank-steps">
+        <div class="bank-step"><span class="bstep-num">1</span><span>Transfer the <strong id="bankStepAmt">exact amount</strong> to the account above</span></div>
+        <div class="bank-step"><span class="bstep-num">2</span><span>Take a screenshot of your payment confirmation</span></div>
+        <div class="bank-step"><span class="bstep-num">3</span><span>Upload the screenshot below — admin will verify and confirm</span></div>
+      </div>
+      <!-- Screenshot upload -->
+      <div class="screenshot-upload-area" id="screenshotUploadArea" onclick="document.getElementById('screenshotInput').click()">
+        <div class="sua-icon">📸</div>
+        <div class="sua-title">Tap to upload screenshot</div>
+        <div class="sua-sub">JPG, PNG — payment confirmation</div>
+        <input type="file" id="screenshotInput" accept="image/*" style="display:none" onchange="handleScreenshot(this)"/>
+      </div>
+      <div class="screenshot-preview" id="screenshotPreview" style="display:none">
+        <img id="screenshotImg" src="" alt="Payment screenshot"/>
+        <button class="screenshot-remove" onclick="removeScreenshot()">✕ Remove</button>
+      </div>
+      <p class="bank-note" style="margin-top:10px">⚠️ Your order is confirmed only after admin verifies your payment. If the amount is less, you will be asked to send the difference.</p>
+    </div>
+
+    <!-- CASH -->
+    <div id="pCash" style="display:none">
+      <div class="cash-box">
+        <div style="font-size:44px;margin-bottom:10px">💵</div>
+        <div class="cash-title">Pay on delivery / at counter</div>
+        <p class="cash-desc">Have the exact amount ready. Our staff will confirm your order.</p>
+      </div>
+      <div class="fg"><label>Your name</label><input type="text" id="cashName" placeholder="Full name"/></div>
+    </div>
+
+    <!-- Phone for SMS confirmation -->
+    <div class="fg" style="margin-top:1rem">
+      <label>📱 Phone number (for SMS confirmation)</label>
+      <input type="tel" id="customerPhone" placeholder="+251 9xx xxx xxx"/>
+    </div>
+
+    <div id="delivAddrGroup" style="display:none">
+      <div class="fg"><label>Delivery address</label><input type="text" id="delivAddr" placeholder="Street, area, city"/></div>
+    </div>
+
+    <div class="check-total-row">
+      <span>Order total</span>
+      <span class="check-total-amt" id="checkTotalAmt"></span>
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:14px;font-size:15px" id="placeBtn" onclick="placeOrder()">
+      Submit Order →
+    </button>
+  </div>
+</div>
+
+<!-- PAYMENT PENDING MODAL (waiting for admin verification) -->
+<div class="overlay" id="pendingOv">
+  <div class="sbox" style="max-width:400px">
+    <div style="font-size:56px;margin-bottom:1rem">⏳</div>
+    <h2 class="stitle">Order Submitted!</h2>
+    <p class="sdesc">Your payment screenshot has been sent to our admin for verification.</p>
+    <div class="sref" id="pendingRef"></div>
+    <div class="pending-status-box">
+      <div class="psb-row"><span>📋 Status</span><span class="psb-val pending" id="pendingStatus">Awaiting verification</span></div>
+      <div class="psb-row"><span>📱 SMS</span><span class="psb-val">Confirmation sent to your phone</span></div>
+      <div class="psb-row" id="pendingAmtRow" style="display:none"><span>💰 Amount</span><span class="psb-val" id="pendingAmtVal"></span></div>
+    </div>
+    <p style="font-size:13px;color:#888;margin-top:1rem;line-height:1.6">Once admin verifies, you'll receive an SMS confirmation. If the amount is wrong, you'll be notified to send the difference.</p>
+    <button class="btn btn-primary" style="width:100%;margin-top:1.5rem" onclick="closePending()">Back to Menu</button>
+  </div>
+</div>
+
+<!-- ORDER TRACKING MODAL -->
+<div class="overlay" id="trackingOv" onclick="closeTracking(event)">
+  <div class="modal tracking-modal">
+    <button class="modal-x" onclick="closeTrackingBtn()">✕</button>
+    <h3 class="mtitle">📦 Track your order</h3>
+    <div class="track-search">
+      <input type="text" id="trackInput" placeholder="Enter order ID (e.g. AHD-0001)" />
+      <button class="btn btn-primary" onclick="trackOrder()" style="border-radius:var(--r);padding:11px 18px">Track</button>
+    </div>
+    <div id="trackResult"></div>
+    <!-- Recent orders shortcut -->
+    <div class="track-recent" id="trackRecent"></div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="overlay sov" id="successOv">
+  <div class="sbox">
+    <div class="srings"><div class="sring sr1"></div><div class="sring sr2"></div><div class="scheck">✓</div></div>
+    <h2 class="stitle">Order Placed! 🎉</h2>
+    <p class="sdesc" id="successDesc">Your food is being prepared.</p>
+    <div class="sref" id="sRef"></div>
+    <div class="ssteps">
+      <div class="ss active"><span>👨‍🍳</span><small>Preparing</small></div><div class="ss-line"></div>
+      <div class="ss"><span>📦</span><small>Packing</small></div><div class="ss-line"></div>
+      <div class="ss" id="lastStep"><span>🍽️</span><small>Served</small></div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;margin-top:1.5rem" onclick="closeSuccess()">Back to Menu</button>
+    <button class="btn-link" onclick="closeSuccess();openTracking()">Track this order →</button>
+  </div>
+</div>
+
+<!-- RESERVATION SUCCESS -->
+<div class="overlay sov" id="resSuccessOv">
+  <div class="sbox">
+    <div class="srings"><div class="sring sr1"></div><div class="sring sr2"></div><div class="scheck">✓</div></div>
+    <h2 class="stitle">Reservation Confirmed! 🎉</h2>
+    <p class="sdesc" id="resSuccessDesc"></p>
+    <div class="sref" id="resSuccessRef"></div>
+    <div class="res-confirm-details" id="resConfirmDetails"></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:1.5rem" onclick="closeResSuccess()">Done</button>
+  </div>
+</div>
+
+<script src="menu-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
