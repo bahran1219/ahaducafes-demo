@@ -349,7 +349,7 @@ img{display:block;max-width:100%}
 .fg input,.fg select{width:100%;padding:11px 14px;border-radius:var(--r);border:1.5px solid var(--bor);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);transition:border-color .2s,box-shadow .2s;background:#fff}
 .fg input:focus,.fg select:focus{outline:none;border-color:var(--br);box-shadow:0 0 0 3px rgba(184,92,42,.1)}
 .fg-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.pw-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;cursor:pointer}
+.pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;cursor:pointer;padding:4px;line-height:1;z-index:2;opacity:.7;transition:opacity .15s}.pw-eye:hover{opacity:1}
 .bank-box{background:var(--bg2);border-radius:var(--r);padding:1.25rem;border:1px solid var(--bor)}
 .bank-title{font-size:12px;font-weight:500;color:var(--br);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
 .brow{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:.5px solid var(--bor)}

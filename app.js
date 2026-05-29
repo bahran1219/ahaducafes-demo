@@ -1,5 +1,5 @@
 'use strict';
-// Ahadu Café — Customer App v8 (Mobile order fix + password show button)
+// Ahadu Café — Customer App v7 (All bugs fixed)
 
 const STORAGE_KEY_ORDERS = 'ahadu_orders';
 const STORAGE_KEY_RES    = 'ahadu_reservations';
@@ -491,7 +491,8 @@ function addToCart() {
   toast('🎉 ' + cur.name + ' added!');
 }
 
-/* FIX 4: Save order to localStorage immediately when added to cart */
+/* FIX 4: Save order to localStorage immediately when added to cart.
+   Final save with payment info happens in placeOrder(). */
 function saveOrderToStorage(entry, payMethod, phone, screenshotUrl, totalAmount) {
   const orders = JSON.parse(localStorage.getItem(STORAGE_KEY_ORDERS) || '[]');
   const label  = orderCtx.table && orderCtx.type === 'dine'
@@ -513,10 +514,10 @@ function saveOrderToStorage(entry, payMethod, phone, screenshotUrl, totalAmount)
     label,
     payMethod:   payMethod || 'Cash',
     phone:       phone || '',
-    screenshot:  screenshotUrl || null,
+    screenshot:  screenshotUrl || null,   // base64 image
     totalAmount: totalAmount || entry.price * entry.qty,
-    paidAmount:  null,
-    payStatus:   isBankPay ? 'pending' : 'confirmed',
+    paidAmount:  null,   // admin fills this in
+    payStatus:   isBankPay ? 'pending' : 'confirmed', // bank=pending, cash=confirmed
     adminNote:   '',
     time:        new Date().toLocaleTimeString(),
     date:        new Date().toLocaleDateString(),
@@ -673,10 +674,12 @@ function openCheckout() {
   const dg = document.getElementById('delivAddrGroup');
   if (dg) dg.style.display = orderCtx.type === 'delivery' ? 'block' : 'none';
 
+  // Set order reference and amount in bank section
   const newRef = 'AHD-' + String(++oN).padStart(4, '0');
   const refEl  = document.getElementById('bankRef');
   if (refEl) refEl.textContent = newRef;
 
+  // Show correct amount in bank section
   syncCartTotals();
   const sub    = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const total  = sub + (orderCtx.type === 'delivery' ? 50 : 0);
@@ -685,9 +688,11 @@ function openCheckout() {
   if (amtEl)  amtEl.textContent  = total + ' Birr';
   if (stepEl) stepEl.textContent = total + ' Birr';
 
+  // Reset screenshot
   removeScreenshot();
   screenshotDataUrl = null;
 
+  // Default to bank tab
   selPay('bank', document.querySelector('.ptab'));
 
   openOv('checkOv');
@@ -707,7 +712,7 @@ function selPay(t, btn) {
   if (showEl) showEl.style.display = '';
 }
 
-/* ── PLACE ORDER ── */
+/* ── PLACE ORDER (with payment verification flow) ── */
 function placeOrder() {
   if (orderCtx.type === 'delivery') {
     const addr = document.getElementById('delivAddr')?.value.trim();
@@ -719,6 +724,7 @@ function placeOrder() {
   const isBankPay = payMethod.toLowerCase().includes('bank');
   const phone     = document.getElementById('customerPhone')?.value.trim() || '';
 
+  // Bank transfer requires screenshot
   if (isBankPay && !screenshotDataUrl) {
     toast('⚠️ Please upload your payment screenshot');
     return;
@@ -727,6 +733,7 @@ function placeOrder() {
   const btn = document.getElementById('placeBtn');
   if (btn) { btn.textContent = '⏳ Submitting…'; btn.disabled = true; }
 
+  // Save all cart items as orders
   const sub   = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const total = sub + (orderCtx.type === 'delivery' ? 50 : 0);
   let lastId  = '';
@@ -739,10 +746,12 @@ function placeOrder() {
     closeCheckoutBtn();
 
     if (isBankPay) {
+      // Bank: show pending verification screen
       const refEl = document.getElementById('pendingRef');
       if (refEl) refEl.textContent = `Order #${lastId}`;
       openOv('pendingOv');
     } else {
+      // Cash: show normal success
       const ref  = lastId || ('AHD-' + String(oN).padStart(4,'0'));
       const descMap = {
         dine:     `Your order will be served to Table ${orderCtx.table || '?'} shortly.`,

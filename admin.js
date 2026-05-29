@@ -45,7 +45,7 @@ function doLogin() {
 
   const admins = getAdmins();
   const match  = admins.find(a => a.username.toLowerCase() === u && a.password === p);
-  if (!match) { errEl.textContent = 'Incorrect username or password. Try: admin / ahadu2026'; shake(); return; }
+  if (!match) { errEl.textContent = 'Incorrect username or password.'; shake(); return; }
 
   setCU(match);
   showDash(match);
@@ -107,6 +107,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const lUser = document.getElementById('lUser');
   if (lPass) lPass.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   if (lUser) lUser.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+  // Auto-set QR base URL to the actual deployed site URL
+  const qrInput = document.getElementById('qrBaseUrl');
+  if (qrInput) {
+    const saved = localStorage.getItem('ahadu_qr_base_url');
+    if (saved) {
+      qrInput.value = saved;
+    } else {
+      const auto = window.location.origin + window.location.pathname.replace(/\/admin\.html$/, '').replace(/\/$/, '');
+      qrInput.value = auto;
+    }
+    qrInput.addEventListener('input', () => {
+      localStorage.setItem('ahadu_qr_base_url', qrInput.value);
+      renderQrGrid();
+    });
+  }
 });
 
 /* ── TABS ── */
@@ -404,6 +420,8 @@ function viewFullScreenshot(orderId) {
     <body><img src="${order.screenshot}" alt="Payment screenshot for ${orderId}"/></body></html>`);
   w.document.close();
 }
+
+function toggleOrderDetail(id, btn) {
   const det = document.getElementById('ocd-' + id);
   const icon = btn.querySelector('.oc-expand-icon');
   if (!det) return;
