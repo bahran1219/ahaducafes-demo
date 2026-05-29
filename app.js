@@ -1,5 +1,5 @@
 'use strict';
-// Ahadu Café — Customer App v7 (All bugs fixed)
+// Ahadu Café — Customer App v8 (Mobile & Payment FIXES)
 
 const STORAGE_KEY_ORDERS = 'ahadu_orders';
 const STORAGE_KEY_RES    = 'ahadu_reservations';
@@ -368,7 +368,8 @@ function renderMenu(cat = 'all') {
         ${!avail ? '<div class="sold-ribbon">Sold Out Today</div>' : ''}
         <div class="mcard-img">
           <img src="${item.img}" alt="${item.name}" loading="lazy"
-            onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#F3EFE8;font-size:44px;\\'>🍽️</div>'"/>
+            onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#F3EFE8;font-size:44px;\\'>🍽️</div>'"
+          />
           <div class="mcard-overlay"></div>
           <div class="mcard-tag">${item.tag}</div>
         </div>
@@ -481,9 +482,11 @@ function addToCart() {
   };
   cart.push(entry);
 
+  // FIX 1: Properly reset button state for next item
   setTimeout(() => {
     closeCustomBtn();
     btn.disabled = false;
+    btn.textContent = 'Add to order';
     btn.style.background = '';
     btn.innerHTML = 'Add to order — <span id="addPrice"></span>';
   }, 900);
@@ -491,39 +494,44 @@ function addToCart() {
   toast('🎉 ' + cur.name + ' added!');
 }
 
-/* FIX 4: Save order to localStorage immediately when added to cart.
-   Final save with payment info happens in placeOrder(). */
-function saveOrderToStorage(entry, payMethod, phone, screenshotUrl, totalAmount) {
+/* ── SAVE ORDER TO STORAGE (with proper payment handling) ── */
+function saveOrderToStorage(cartItems, payMethod, phone, screenshotUrl, totalAmount) {
   const orders = JSON.parse(localStorage.getItem(STORAGE_KEY_ORDERS) || '[]');
   const label  = orderCtx.table && orderCtx.type === 'dine'
     ? 'Table ' + orderCtx.table
     : orderCtx.type === 'takeaway' ? 'Takeaway' : 'Delivery';
   const isBankPay = (payMethod || '').toLowerCase().includes('bank');
   const id = 'AHD-' + String(++oN).padStart(4, '0');
-  orders.unshift({
+  
+  // Create a single order entry combining all cart items
+  const orderEntry = {
     id,
-    item:        entry.name,
-    img:         entry.img  || '',
-    price:       entry.price,
-    qty:         entry.qty,
-    removed:     entry.removed || [],
-    extras:      entry.extras  || [],
-    note:        entry.note    || '',
+    items: cartItems.map(ci => ({
+      name: ci.name,
+      qty: ci.qty,
+      price: ci.basePrice,
+      img: ci.img,
+      removed: ci.removed || [],
+      extras: ci.extras || [],
+      note: ci.note || ''
+    })),
     orderType:   orderCtx.type,
     table:       orderCtx.table || null,
     label,
     payMethod:   payMethod || 'Cash',
     phone:       phone || '',
-    screenshot:  screenshotUrl || null,   // base64 image
-    totalAmount: totalAmount || entry.price * entry.qty,
-    paidAmount:  null,   // admin fills this in
-    payStatus:   isBankPay ? 'pending' : 'confirmed', // bank=pending, cash=confirmed
+    screenshot:  screenshotUrl || null,
+    totalAmount: totalAmount,
+    paidAmount:  null,
+    payStatus:   isBankPay ? 'pending' : 'confirmed',
     adminNote:   '',
     time:        new Date().toLocaleTimeString(),
     date:        new Date().toLocaleDateString(),
     createdAtMs: Date.now(),
     status:      'preparing'
-  });
+  };
+  
+  orders.unshift(orderEntry);
   localStorage.setItem(STORAGE_KEY_ORDERS, JSON.stringify(orders.slice(0, 200)));
   return id;
 }
@@ -733,14 +741,11 @@ function placeOrder() {
   const btn = document.getElementById('placeBtn');
   if (btn) { btn.textContent = '⏳ Submitting…'; btn.disabled = true; }
 
-  // Save all cart items as orders
+  // FIX 2: Save all cart items as ONE order with all items included
   const sub   = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const total = sub + (orderCtx.type === 'delivery' ? 50 : 0);
-  let lastId  = '';
-
-  cart.forEach(ci => {
-    lastId = saveOrderToStorage(ci, payMethod, phone, isBankPay ? screenshotDataUrl : null, total);
-  });
+  
+  const orderId = saveOrderToStorage(cart, payMethod, phone, isBankPay ? screenshotDataUrl : null, total);
 
   setTimeout(() => {
     closeCheckoutBtn();
@@ -748,11 +753,10 @@ function placeOrder() {
     if (isBankPay) {
       // Bank: show pending verification screen
       const refEl = document.getElementById('pendingRef');
-      if (refEl) refEl.textContent = `Order #${lastId}`;
+      if (refEl) refEl.textContent = `Order #${orderId}`;
       openOv('pendingOv');
     } else {
       // Cash: show normal success
-      const ref  = lastId || ('AHD-' + String(oN).padStart(4,'0'));
       const descMap = {
         dine:     `Your order will be served to Table ${orderCtx.table || '?'} shortly.`,
         takeaway: 'Ready to pick up at the counter in ~15 min!',
@@ -767,7 +771,7 @@ function placeOrder() {
       const sRefEl = document.getElementById('sRef');
       const lsEl   = document.getElementById('lastStep');
       if (descEl) descEl.textContent = descMap[orderCtx.type] || '';
-      if (sRefEl) sRefEl.textContent  = `Order #${ref}`;
+      if (sRefEl) sRefEl.textContent  = `Order #${orderId}`;
       if (lsEl)   { const [icon,lbl] = lastMap[orderCtx.type]||['🍽️','Served']; lsEl.innerHTML=`<span>${icon}</span><small>${lbl}</small>`; }
       openOv('successOv');
       animateSteps();
