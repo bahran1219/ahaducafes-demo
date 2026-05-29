@@ -251,17 +251,24 @@ function openTracking() {
   const recentEl = document.getElementById('trackRecent');
   if (recentEl && orders.length) {
     recentEl.innerHTML = '<div class="tr-recent-title">Your recent orders</div>' +
-      orders.slice(0, 3).map(o => `
-        <div class="tr-recent-item" onclick="document.getElementById('trackInput').value='${o.id}';trackOrder()">
-          <div class="tr-ri-left">
-            <span class="tr-ri-id">${o.id}</span>
-            <span class="tr-ri-name">${o.qty > 1 ? o.qty + '× ' : ''}${o.item}</span>
-          </div>
-          <div class="tr-ri-right">
-            <span class="tr-ri-price">${o.price * (o.qty || 1)} Birr</span>
-            <span class="tr-ri-time">${o.time}</span>
-          </div>
-        </div>`).join('');
+      orders.slice(0, 3).map(o => {
+        // Handle both old and new order format
+        const itemLabel = o.items ? `${o.items.map(it => `${it.qty > 1 ? it.qty + '× ' : ''}${it.name}`).join(', ')}` : `${o.qty > 1 ? o.qty + '× ' : ''}${o.item}`;
+        const totalPrice = o.items 
+          ? o.items.reduce((sum, it) => sum + (it.qty * it.price), 0) 
+          : o.price * (o.qty || 1);
+        return `
+          <div class="tr-recent-item" onclick="document.getElementById('trackInput').value='${o.id}';trackOrder()">
+            <div class="tr-ri-left">
+              <span class="tr-ri-id">${o.id}</span>
+              <span class="tr-ri-name">${itemLabel}</span>
+            </div>
+            <div class="tr-ri-right">
+              <span class="tr-ri-price">${totalPrice} Birr</span>
+              <span class="tr-ri-time">${o.time}</span>
+            </div>
+          </div>`;
+      }).join('');
   }
   const resultEl = document.getElementById('trackResult');
   if (resultEl) resultEl.innerHTML = '';
@@ -309,19 +316,28 @@ function trackOrder() {
 
   const eta = statusStep >= 3 ? '✅ Order delivered!' : statusStep === 2 ? '🛵 On the way — arriving soon!' : '⏱ Estimated: 15–20 minutes';
 
+  // Handle both old and new format
+  const itemDisplay = order.items 
+    ? order.items.map(it => `${it.qty > 1 ? it.qty + '× ' : ''}${it.name}`).join(', ')
+    : `${order.qty > 1 ? order.qty + '× ' : ''}${order.item}`;
+  const itemImg = order.items ? (order.items[0]?.img || '') : (order.img || '');
+  const totalPrice = order.items
+    ? order.items.reduce((sum, it) => sum + (it.qty * it.price), 0)
+    : order.price * (order.qty || 1);
+
   resultEl.innerHTML = `
     <div class="track-card">
       <div class="tc-header">
         <div class="tc-img-wrap">
-          ${order.img ? `<img src="${order.img}" class="tc-img" alt="${order.item}" onerror="this.style.display='none'"/>` : '<div class="tc-img-ph">🍽️</div>'}
+          ${itemImg ? `<img src="${itemImg}" class="tc-img" alt="item" onerror="this.style.display='none'"/>` : '<div class="tc-img-ph">🍽️</div>'}
         </div>
         <div class="tc-info">
-          <div class="tc-name">${order.qty > 1 ? order.qty + '× ' : ''}${order.item}</div>
+          <div class="tc-name">${itemDisplay}</div>
           <div class="tc-meta">
             <span class="tc-id">${order.id}</span>
             <span class="ot-type-badge ${order.orderType}">${order.label || order.orderType}</span>
           </div>
-          <div class="tc-price">${order.price * (order.qty || 1)} Birr</div>
+          <div class="tc-price">${totalPrice} Birr</div>
           ${detailRows ? `
             <button class="oc-expand-btn" onclick="toggleTD(this)" style="margin-top:6px">
               <span class="oc-expand-icon">▼</span> Customizations
